@@ -1,0 +1,57 @@
+services:
+  db:
+    image: pgduckdb/pgduckdb:18-main
+    container_name: pgduckdb_olap
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: analytic_admin
+      POSTGRES_PASSWORD: p2r0o2d6uction!
+      POSTGRES_DB: analytic_db
+    volumes:
+      # Fresh volume for PG 18 data
+      - pgduckdb_data:/var/lib/postgresql
+      # WAL Archive (optional but good for recovery)
+      - wal_archive_duckdb:/var/lib/postgresql/wal_archive
+      # Init scripts (Your CREATE TABLE scripts)
+      - ../database/warehouse:/docker-entrypoint-initdb.d
+      # Custom config (See step 3 below)
+      - ../conf/postgres.conf.duckdb:/etc/postgresql/postgresql.conf
+      - ../conf/pg_hba.conf.duckdb:/etc/postgresql/pg_hba.conf
+    command: >
+      postgres 
+      -c 'config_file=/etc/postgresql/postgresql.conf'
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G  # Strict limit for your 2.8GB host
+        reservations:
+          memory: 1G
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analytic_admin  -d analytic_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgduckdb_data:
+  wal_archive_duckdb:
+
+#   services:
+#   db:
+#     image: pgduckdb/pgduckdb:18-main
+#     ports:
+#       - ${PORT:-5432}:5432
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: ${PASSWORD:-duckdb}
+#     volumes:
+#       - pgduckdb_data:/var/lib/postgresql/data
+#       - ./docker/postgresql.conf:/etc/postgresql/postgresql.conf
+#     command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
+#     restart: always
+
+# volumes:
+#   pgduckdb_data:

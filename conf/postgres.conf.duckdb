@@ -1,0 +1,55 @@
+# ===== REPLICATION =====
+wal_level = replica
+max_wal_senders = 10
+wal_keep_size = 1GB
+
+# Archiving
+archive_mode = on
+archive_command = 'cp %p /var/lib/postgresql/wal_archive/%f'
+
+# ===== PARTITIONING =====
+constraint_exclusion = partition
+
+# ===== MEMORY & PERFORMANCE (CRITICAL TUNING) =====
+shared_buffers = 128MB          # Reduced from 256MB to save RAM
+effective_cache_size = 1GB      # Estimate of total RAM available
+work_mem = 2MB                  # CRITICAL: Reduced from 64MB to prevent OOM
+maintenance_work_mem = 32MB     # Reduced from 64MB
+wal_buffers = 16MB              # Keep reasonable for WAL
+
+# ===== CONNECTIONS (CRITICAL TUNING) =====
+max_connections = 25            # Reduced from 200 to save RAM per connection
+
+# ===== LOGGING =====
+log_statement = 'all'           # Good for financial auditing
+log_min_duration_statement = 1000
+log_duration = on
+logging_collector = off
+timezone = 'UTC'
+
+# ===== CHECKPOINTS =====
+checkpoint_timeout = 15min
+checkpoint_completion_target = 0.9
+
+# ===== DATA SAFETY (Financial Data) =====
+synchronous_commit = on         # Ensures transactions are safe
+fsync = on                      # Ensures data is written to disk
+full_page_writes = on           # Ensures recovery is safe
+
+# ===== MONITORING =====
+log_connections = on
+log_disconnections = on
+log_lock_waits = on
+# log_statement = 'all' (Already set above)
+
+# ===== NETWORK =====
+listen_addresses = '*'
+
+# ===== pg_duckdb SPECIFIC =====
+shared_preload_libraries = 'pg_duckdb'
+
+# ===== RECOVERY SETTINGS (Optional - Commented out) =====
+# restore_command = 'cp /var/lib/postgresql/wal_archive/%f %p'
+# recovery_target_time = '2026-08-12 18:21:22'
+# recovery_target_action = 'promote'
+# recovery_target_inclusive = 'true'

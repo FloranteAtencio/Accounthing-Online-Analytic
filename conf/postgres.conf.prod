@@ -1,0 +1,52 @@
+# ===== REPLICATION =====
+wal_level = replica
+max_wal_senders = 10
+wal_keep_size = 1GB
+
+# Archiving
+archive_mode = on
+archive_command = 'cp %p /var/lib/postgresql/wal_archive/%f'
+
+# ===== PARTITIONING =====
+constraint_exclusion = partition
+
+# ===== MEMORY & PERFORMANCE =====
+shared_buffers = 256MB
+effective_cache_size = 1GB
+work_mem = 64MB
+maintenance_work_mem = 64MB
+
+# ===== CONNECTIONS =====
+max_connections = 200
+
+# ===== LOGGING =====
+log_statement = 'all'
+log_min_duration_statement = 1000
+log_duration = on
+logging_collector = off
+timezone = 'UTC'
+# ===== CHECKPOINTS =====
+checkpoint_timeout = 15min
+checkpoint_completion_target = 0.9
+
+# === Missing for financial data safety ==
+synchronous_commit = on              
+fsync = on                           
+full_page_writes = on                
+wal_buffers = 16MB                   
+random_page_cost = 1.1               
+
+# == Missing for monitoring ==
+log_connections = on
+log_disconnections = on
+log_lock_waits = on
+log_statement = 'all'
+
+#=== local_host ==
+listen_addresses = '*'
+
+# ===== RECOVERY SETTINGS =====
+#restore_command = 'cp /var/lib/postgresql/wal_archive/%f %p'
+#recovery_target_time = '2026-08-12 18:21:22'  # <-- CHANGE THIS to your Baseline Time
+#recovery_target_action = 'promote'
+#recovery_target_inclusive = 'true'
