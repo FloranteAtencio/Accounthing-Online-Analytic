@@ -1,0 +1,32 @@
+Diagram of folder heirarchy
+
+data-warehouse-project/
+│
+├── README.md
+│
+├── docs/
+│   ├── architecture.md
+│   ├── data-model.md
+│   └── etl-process.md
+│
+├── source/
+│   └── sample/
+│
+├── etl/
+│   ├── python/
+│   └── sql/
+│
+├── staging/
+│   └── sql/
+│
+├── warehouse/
+│   ├── dimensions/
+│   └── facts/
+│
+├── pipeline/
+│    
+│
+├── analytics/
+│   └── queries/
+│
+└── docker/
