@@ -1,9 +1,13 @@
-# OLAP_DATAWAREHOUSE_ACCOUNTING_ANALYTIC
+### Online Analytic
 Datawarehouse
+
+Part 2 of Learning Project - Datawarehouse
+
 
 sudo chown -R 999:999 /var/lib/docker/volumes/duckdb_wal_archive_duckdb/_data
 
-
+Design / Workflow
+---
                     SOURCES
              ┌────────┼─────────┐
              │        │         │
@@ -46,6 +50,7 @@ sudo chown -R 999:999 /var/lib/docker/volumes/duckdb_wal_archive_duckdb/_data
 
 
 Table Hierarchy
+---
 ```
 data-warehouse-project/
 │
@@ -78,6 +83,63 @@ data-warehouse-project/
 
 Road Map
 ```
+Phase 1 - DONE
+OLTP / CSV
+ ↓
+ETL
+ ↓
+Staging
+ ↓
+Star Schema
+ ↓
+Warehouse
+
+Phase 2 - NEXT
+
+Warehouse
+ ↓
+OLAP SQL
+ ↓
+Business questions
+ ↓
+Power BI
+
+Phase 3
+
+Full Refresh
+      ↓
+Incremental Load
+
+Phase 4
+
+Incremental Load
+      ↓
+SCD Type 2
+
+Phase 5
+
+PostgreSQL OLTP
+      ↓
+CDC
+      ↓
+ETL/ELT
+      ↓
+Warehouse
+
+Phase 6
+
+ETL
+ ↓
+Orchestration
+ ↓
+Monitoring
+ ↓
+Data quality
+ ↓
+Production-style pipeline
+
+
+Current Progression
 ☑ Source → staging
 ☑ Staging validation
 ☑ Transformation
@@ -86,10 +148,10 @@ Road Map
 ☑ Fact loading
 ☑ Grain verification
 ☑ Referential integrity checks
-☑ Reconciliation
-☑ Row counts
-☑ Financial amount reconciliation
-☑ ETL logging
-☑ Error handling
-☑ Basic automation
+Reconciliation < --- NEXT
+Row counts
+Financial amount reconciliation
+ETL logging
+Error handling
+Basic automation
 ```
