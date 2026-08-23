@@ -4,36 +4,80 @@ Datawarehouse
 sudo chown -R 999:999 /var/lib/docker/volumes/duckdb_wal_archive_duckdb/_data
 
 
-
-                  ERP / OLTP
-                 PostgreSQL 15
-                      │
-                      │ EXTRACT
+                    SOURCES
+             ┌────────┼─────────┐
+             │        │         │
+            OLTP     CSV       API
+             │        │         │
+             └────────┼─────────┘
                       ▼
-                 Python ETL
+                   EXTRACT
                       │
+                      ▼
+                   PYTHON
+              ┌───────┼────────┐
+              │       │        │
+          sanitize validate  logging
+              │       │        │
+              └───────┼────────┘
                       ▼
                   STAGING
                       │
-             ┌────────┴────────┐
-             │                 │
-        VALIDATION         TRANSFORM
-             │                 │
-             └────────┬────────┘
                       ▼
-                   DuckDB
-                  OLAP/WH
+                TRANSFORMATION
                       │
-               ┌──────┴──────┐
-               ▼             ▼
-           DIMENSIONS       FACTS
-               │             │
-               └──────┬──────┘
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+     DIMENSIONS   DIMENSIONS   DIMENSIONS
+          │           │           │
+          └───────────┼───────────┘
                       ▼
-                  ANALYTICS# olap_database
+                    FACTS
+                      │
+                      ▼
+                 DATA WAREHOUSE
+                      │
+                      ▼
+                 ANALYTICS
+                      │
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+       Reports     Dashboard    Analysis
+
+
+Table Hierarchy
+```
+data-warehouse-project/
+│
+├── README.md
+│
+├── docs/
+│   ├── architecture.md
+│   ├── data-model.md
+│   └── etl-process.md
+│
+├── source/
+│   └── sample/
+│
+├── etl/
+│   ├── python/
+│   └── sql/
+│
+├── staging/
+│   └── sql/
+│
+├── warehouse/
+│   ├── dimensions/
+│   └── facts/
+│
+├── analytics/
+│   └── queries/
+│
+└── docker/
+```
 
 Road Map
-
+```
 ☑ Source → staging
 ☑ Staging validation
 ☑ Transformation
@@ -48,3 +92,4 @@ Road Map
 ☑ ETL logging
 ☑ Error handling
 ☑ Basic automation
+```
