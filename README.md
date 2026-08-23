@@ -31,4 +31,20 @@ sudo chown -R 999:999 /var/lib/docker/volumes/duckdb_wal_archive_duckdb/_data
                └──────┬──────┘
                       ▼
                   ANALYTICS# olap_database
-# olap-datawarehouse
+
+Road Map
+
+☑ Source → staging
+☑ Staging validation
+☑ Transformation
+☑ Dimension loading
+☑ Surrogate keys
+☑ Fact loading
+☑ Grain verification
+☑ Referential integrity checks
+☑ Reconciliation
+☑ Row counts
+☑ Financial amount reconciliation
+☑ ETL logging
+☑ Error handling
+☑ Basic automation
