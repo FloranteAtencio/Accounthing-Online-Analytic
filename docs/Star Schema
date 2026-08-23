@@ -1,0 +1,35 @@
+
+# Star Schema
+
+                dim_customer
+                      │
+                      │
+dim_currency ──── fact_AR ──── dim_client
+                      │
+                      │
+                 dim_location
+                      │
+                      │
+                   dim_date
+
+
+                 dim_customer
+                      │
+                      │
+dim_product ──── fact_invoice_line ──── dim_client
+                      │
+                      │
+                      │
+                      │
+                   dim_date
+
+                 dim_customer
+                      │
+                      │
+dim_account ──── fact_General_ledger ──── dim_client
+                      │
+                      │
+                      │
+                      │
+                   dim_date
+
