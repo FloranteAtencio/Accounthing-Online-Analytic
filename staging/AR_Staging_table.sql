@@ -2,6 +2,11 @@ SELECT 'Staging table schema start!' as  Status;
 
 BEGIN;
 
+-- ============================================================
+-- Staging table or Silver stage 
+-- On this layer data are already sanitated and validated 
+-- this time record linage only
+-- ============================================================
 
 -- 1. STAGING TABLE
 CREATE TABLE IF NOT EXISTS Staging.stg_ar_imports(
@@ -19,102 +24,6 @@ CREATE TABLE IF NOT EXISTS Staging.stg_ar_imports(
     UNIQUE(invoice_code, customer_code)
 
 );
-
--- 2. WORKFLOW TABLE
-CREATE TABLE IF NOT EXISTS Staging.import_workflows (
-    session_id INT,
-    staging_record_id BIGINT,
-    staging_table VARCHAR(50),
-    previous_state VARCHAR(50),
-    new_state VARCHAR(50),
-    changed_by VARCHAR(100),
-    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    notes TEXT
-);
-
--- 3. APPROVAL TABLE
-CREATE TABLE IF NOT EXISTS Staging.import_approvals (
-    session_id INT,
-    staging_record_id BIGINT,   
-
-    approval_level SMALLINT,
-    approval_status VARCHAR(20),
-
-    approved_by VARCHAR(100),
-    approved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    comments TEXT
-);
-
-
-DROP TABLE IF EXISTS Staging.import_sessions CASCADE;
-CREATE TABLE Staging.import_sessions (
-    session_id SERIAL PRIMARY KEY,
-    client_id INT NOT NULL, -- REFERENCES Finance.clients(client_id) ON DELETE NO ACTION,
-    import_type VARCHAR(50) NOT NULL,  -- 'transactions', 'ar', 'ap', 'inventory', etc.
-    imported_by VARCHAR(100) NOT NULL,
-    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    completed_at TIMESTAMP,
-    status VARCHAR(20) DEFAULT 'IN_PROGRESS' CHECK (status IN ('IN_PROGRESS', 'SUCCESS', 'PARTIAL_SUCCESS', 'FAILED')),
-    total_records INT DEFAULT 0,
-    successful_records INT DEFAULT 0,
-    failed_records INT DEFAULT 0,
-    error_summary TEXT,
-    source_file VARCHAR(500),
-    notes TEXT
-);
-
-DROP TABLE IF EXISTS Staging.import_detail_logs CASCADE;
-CREATE TABLE Staging.import_detail_logs (
-    detail_id BIGSERIAL PRIMARY KEY,
-    session_id INT NOT NULL, -- REFERENCES Staging.import_sessions(session_id) ON DELETE NO ACTION,
-    row_number INT NOT NULL,
-    table_name VARCHAR(255) NOT NULL,
-    record_data JSONB NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('SUCCESS', 'FAILED', 'SKIPPED', 'WARNED')),
-    error_message TEXT,
-    warning_message TEXT,
-    created_record_id INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-DROP TABLE IF EXISTS Staging.import_validation_log CASCADE;
-CREATE TABLE Staging.import_validation_log (
-    validation_id BIGSERIAL PRIMARY KEY,
-    session_id INT, -- REFERENCES Staging.import_sessions(session_id) ON DELETE NO ACTION,
-    row_number INT NOT NULL,
-    field_name VARCHAR(255) NOT NULL,
-    validation_rule VARCHAR(255) NOT NULL,
-    expected_value TEXT,
-    actual_value TEXT,
-    is_valid BOOLEAN NOT NULL,
-    severity VARCHAR(20) DEFAULT 'ERROR' CHECK (severity IN ('ERROR', 'WARNING', 'INFO')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-
-DROP TABLE IF EXISTS Staging.record_lineage CASCADE;
-CREATE TABLE Staging.record_lineage (
-    lineage_id BIGSERIAL PRIMARY KEY,
-    table_name VARCHAR(255) NOT NULL,
-    record_id INT NOT NULL,
-    client_id INT, --REFERENCES Finance.clients(client_id) ON DELETE NO ACTION,
-    source_type VARCHAR(50) NOT NULL CHECK (source_type IN (
-        'MANUAL_ENTRY', 'SPREADSHEET_IMPORT', 'API_IMPORT', 
-        'SYSTEM_GENERATED', 'CORRECTION', 'REVERSAL'
-    )),
-    source_file VARCHAR(500),
-    import_session_id INT REFERENCES Staging.import_sessions(session_id) ON DELETE NO ACTION,
-    import_row_number INT,
-    created_by VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_modified_by VARCHAR(100),
-    last_modified_at TIMESTAMP,
-    prev_hash TEXT,
-    row_hash TEXT,
-    is_original BOOLEAN DEFAULT TRUE
-);
-
 
 DROP TABLE IF EXISTS Staging.stg_account;
 CREATE TABLE IF NOT EXISTS Staging.stg_account(
