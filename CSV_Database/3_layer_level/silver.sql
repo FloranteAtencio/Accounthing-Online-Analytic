@@ -1,21 +1,25 @@
-SELECT 'Staging table schema start!' as  Status;
-
 BEGIN;
 
--- ============================================================
--- Staging table or Bronse stage 
--- On this layer data are need to sanitize, validation and approval
--- On this audit, compliance record linage  and monitoring will on line
--- ============================================================
+CREATE TABLE IF NOT EXISTS Staging.stg_ar_imports(
+    -- fact 
+    -- lead column
+    invoice_code TEXT,
+    customer_code TEXT,
+    client_code TEXT,
 
--- ===============================================
--- Staging Area
--- ===============================================
+    -- measure
+    amount TEXT,
 
--- 1. STAGING TABLE
+    -- dim date
+    invoice_date TEXT,
+    due_date TEXT,
+
+    -- metadata
+    status TEXT,
+    imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS Staging.stg_sale_imports(
-    id BIGSERIAL PRIMARY KEY,
-    session_id INT NOT NULL, -- id when the loading data or importing
     -- fact 
     -- lead column
     sale_order_code TEXT NOT NULL,
@@ -53,12 +57,9 @@ CREATE TABLE IF NOT EXISTS Staging.stg_sale_imports(
     revenue TEXT NOT NULL,
     
     -- meta data
-    validation_status TEXT,
-    validation_errors TEXT,
-    imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(sale_order_code)
+    imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMIT;
 
-SELECT 'Staging table schema complete!' as  Status;
+SELECT 'Silver table schema complete!' as  Status;

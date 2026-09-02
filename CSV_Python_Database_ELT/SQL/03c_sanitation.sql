@@ -16,7 +16,7 @@ BEGIN
     FOR r IN    
         SELECT *
         FROM Staging.stg_sale_imports a
-        WHERE a.session_id = p_session_id
+    --    WHERE a.session_id = p_session_id
     LOOP
 
         IF r.unit_cost::text !~ '^\.?\d+(\.\d+)?$' THEN 
