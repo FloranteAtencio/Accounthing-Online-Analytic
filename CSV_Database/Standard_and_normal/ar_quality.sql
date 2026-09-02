@@ -12,5 +12,9 @@ FROM (
             PARTITION BY TRIM(invoice_code)
             ORDER BY TRIM(invoice_code)
         ) AS Uniq
-    FROM Bronze.stg_ar_imports
+    FROM Bronze.stg_ar_imports a
+    JOIN Support.import_workflows b ON a.staging_record_id = a.invoice_code
+    AND b.staging_table = 'Bronze.stg_ar_import'
+    AND b.new_state = 'For Posting'
+    WHERE invoice_code NOT NULL
 ) sub;   
