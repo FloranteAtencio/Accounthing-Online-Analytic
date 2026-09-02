@@ -1,6 +1,8 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS Staging.stg_ar_imports(
+CREATE SCHEMA Silver;
+
+CREATE TABLE IF NOT EXISTS Silver.stg_ar_imports(
     -- fact 
     -- lead column
     invoice_code TEXT,
@@ -19,7 +21,7 @@ CREATE TABLE IF NOT EXISTS Staging.stg_ar_imports(
     imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS Staging.stg_sale_imports(
+CREATE TABLE IF NOT EXISTS Silver.stg_sale_imports(
     -- fact 
     -- lead column
     sale_order_code TEXT NOT NULL,

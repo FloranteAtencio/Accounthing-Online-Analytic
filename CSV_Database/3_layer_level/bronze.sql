@@ -18,9 +18,7 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_ar_imports(
     due_date TEXT,
 
     -- metadata
-    status TEXT,
-    validation_status TEXT DEFAULT 'DRAFT',
-    validation_errors TEXT DEFAULT NULL
+    status TEXT
 
 );
 
@@ -59,11 +57,8 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_sale_imports(
     unit_price TEXT NOT NULL,
     profit TEXT NOT NULL,
     cost TEXT NOT NULL,
-    revenue TEXT NOT NULL,
-    
+    revenue TEXT NOT NULL    
     -- meta data
-    validation_status TEXT DEFAULT 'DRAFT',
-    validation_errors TEXT
 );
 
 COMMIT;

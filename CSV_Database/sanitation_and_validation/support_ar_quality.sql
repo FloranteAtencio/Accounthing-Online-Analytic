@@ -10,7 +10,8 @@ BEGIN
 
     FOR r IN    
         SELECT *
-        FROM Bronze.stg_ar_imports a
+        FROM Bronze.stg_ar_imports
+        WHERE validation_status = 'DRAFT'
     LOOP
 
         IF r.amount !~ '^\.?\d+(\.\d+)?$' THEN 
@@ -29,11 +30,13 @@ BEGIN
             collect_errors := array_append(collect_errors,'INVALID Status');
         END IF;
 
-    UPDATE Bronze.stg_ar_imports s
+    UPDATE Support.import_workflows s
     SET 
+        previous_state = 'For Sanitation',
+        new_state = 'For Validation' ,
         validation_status = CASE WHEN array_length(collect_errors, 1) = 0 THEN 'SANITATION VALID' ELSE 'SANITATION INVALID' END,
         validation_errors = CASE WHEN array_length(collect_errors, 1) = 0 THEN NULL ELSE array_to_string(collect_errors, '; ') END,
-    WHERE s.invoice_code = r.invoice_code AND validation_status = 'DRAFT';
+    WHERE s.staging_record_id = r.invoice_code AND s.staging_table = 'Bronze.stg_ar_imports' AND validation_status = 'DRAFT';
 
     collect_errors := ARRAY[]::TEXT[];
 
@@ -88,6 +91,7 @@ LANGUAGE plpgsql as $$
 DECLARE
     collect_errors TEXT[] := ARRAY[]::TEXT[];
 BEGIN
+    
     IF p_amount <= 0 THEN
         collect_errors := array_append(collect_errors,'AR amount must be positive');        
     END IF;
@@ -102,11 +106,13 @@ BEGIN
         collect_errors := array_append(collect_errors,'Invalid AR status');        
     END IF;
 
-    UPDATE Bronze.stg_ar_imports s
+    UPDATE Support.import_workflows s
     SET 
+        previous_state = 'For Validation',
+        new_state = 'For Posting' ,
         validation_status = CASE WHEN array_length(collect_errors, 1) = 0 THEN 'VALIDATION VALID' ELSE 'VALIDATION INVALID' END,
         validation_errors = CASE WHEN array_length(collect_errors, 1) = 0 THEN NULL ELSE array_to_string(collect_errors, '; ') END,
-    WHERE s.invoice_code = p_invoice_code AND validation_status = 'SANITATION VALID';
+    WHERE s.staging_record_id = r.invoice_code AND s.staging_table = 'Bronze.stg_ar_imports' AND validation_status = 'SANITATION VALID';
 
 EXCEPTION
     WHEN OTHERS THEN

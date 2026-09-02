@@ -1,7 +1,5 @@
 BEGIN;
 
-CREATE SCHEMA Support;
-
 CREATE OR REPLACE PROCEDURE Support.import_workflow_sanitation(
     IN p_table_related INT
 )
