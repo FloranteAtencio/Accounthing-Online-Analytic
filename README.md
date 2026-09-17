@@ -1,25 +1,6 @@
 ### Online Analytic
 Datawarehouse
 
-Part 2 of Learning Project - Datawarehouse
-
-This is part 2 of my database journey. 
-Here is the link for the Part 1 https://github.com/FloranteAtencio/Part-1-OLTP-Database. All of the configuration, application and setup are in the Part 1 Fell free to check it.
-- Tools:
-  * Postgresql Duckdb -> OLAP Database
-  *  Python -> Pipeline
-  * Postgresql 15.15 -> OLTP Database
-- I intended not to apply all what I've done at the part 1 like:
-  * Domain
-  * Constrain
-  * Partition
-  * RBAC
-  * RLS
-  * Security Definer
-  * Search path
-  * Audits and so on.
-Because this part 2 project is for data warehousing.
-
 Design / Workflow
 ---
                     SOURCES
