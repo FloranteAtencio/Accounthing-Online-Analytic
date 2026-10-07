@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE OR REPLACE PROCEDURE Staging.post_ar_import( IN p_session_id INT)
+CREATE OR REPLACE PROCEDURE Staging.post_ar_import( IN p_session_id INT, p_import_type TEXT)
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -13,23 +13,32 @@ BEGIN
     
     FOR r IN
         SELECT a.*
-        FROM Staging.stg_ar_imports a
+        FROM Bronze.stg_ar_imports a
         LEFT JOIN Audit.import_workflows b ON a.id = b.staging_record_id 
         WHERE a.session_id = p_session_id
           AND validation_status = 'VALID'
           AND b.new_state = 'APPROVE_L3'
     LOOP
-        
-        CALL Finance.ar_transaction(
+        INSERT INTO Silver.stg_ar_imports (
+            session_id
+            ,invoice_code
+            ,client_code
+            ,customer_code
+            ,due_date
+            ,invoice_date
+            ,amount
+            ,status)
+        VALUES (
+            r.session_id::INT,
+            r.invoice_code::INT,
             r.client_code::INT,
             r.customer_code::INT,
             r.due_date::DATE,
             r.invoice_date::DATE,
             r.amount::DECIMAL,
             r.status::VARCHAR,
-            gen_random_uuid()::TEXT
-        );
-    
+        );        
+        
         SELECT row_hash
         INTO new_previous_hash
         FROM Audit.record_lineage
@@ -51,7 +60,7 @@ BEGIN
             'stg_ar_import', 
             r.id, 
             r.client_code::INT, 
-            'SPREADSHEET_IMPORT',
+            p_import_type,
             current_setting('app.import_source_file', TRUE),
             p_session_id::INT,
             current_user,
@@ -82,45 +91,6 @@ EXCEPTION
 
 END;
 $$ SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
-
-
-CREATE OR REPLACE PROCEDURE Staging.import_workflow_posting(
-    IN p_session_id INT
-)
-LANGUAGE plpgsql AS $$
-DECLARE
-    new_session_id INT;
-    table_related VARCHAR;
-BEGIN
-    
-    SELECT session_id INTO new_session_id
-    FROM Audit.import_sessions a
-    WHERE a.session_id = p_session_id
-    LIMIT 1;
-    
-    SELECT Staging.table_verification(new_session_id) INTO table_related;
-
-    IF new_session_id IS NULL THEN
-        RAISE EXCEPTION 'invalid Session ID : %', new_session_id;
-    END IF;
-
-    IF table_related IS NULL THEN   
-        RAISE EXCEPTION 'Invalid table referecne : %',table_related;
-    END IF;
-
-    PERFORM 1 FROM Audit.import_sessions WHERE session_id = p_session_id;
-
-    IF table_related = 'Staging.stg_ar_imports' THEN
-        CALL Staging.post_ar_import(new_session_id);
-    END IF;
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE EXCEPTION 'Staging.import_workflow_posting failed : % ', SQLERRM;
-
-END;
-$$ SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
-
 
 COMMIT;
 

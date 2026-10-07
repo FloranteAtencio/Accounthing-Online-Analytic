@@ -1,7 +1,7 @@
 BEGIN;
 
-DROP FUNCTION IF EXISTS Bronze.ar_import_data(INT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) CASCADE;
-CREATE FUNCTION Bronze.ar_import_data(
+DROP FUNCTION IF EXISTS Staging.ar_import_data(INT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) CASCADE;
+CREATE FUNCTION Staging.ar_import_data(
     p_session_id    INT,
     p_client_id     TEXT,
     p_customer_id   TEXT ,
@@ -76,6 +76,6 @@ BEGIN
 
     RETURN new_ar_staging_id;
 END; 
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit pg_catalog;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;
 
 COMMIT;

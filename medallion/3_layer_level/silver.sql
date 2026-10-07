@@ -10,7 +10,7 @@ BEGIN;
 CREATE SCHEMA Silver;
 -- 1. STAGING TABLE
 CREATE TABLE IF NOT EXISTS Silver.stg_ar_imports(
-
+    session_id INT,
     invoice_code TEXT,
     customer_code bigint_account_code_type,
     client_code bigint_account_code_type,
@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS Silver.stg_ar_imports(
     invoice_date DATE,
     due_date DATE,
     status status_typing,
-    validation_status VARCHAR(20) DEFAULT NULL,
-    validation_errors TEXT DEFAULT NULL,
+    --validation_status VARCHAR(20) DEFAULT NULL,
+    --validation_errors TEXT DEFAULT NULL,
     imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(invoice_code, customer_code)
 
