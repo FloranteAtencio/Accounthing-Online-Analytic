@@ -1,5 +1,0 @@
-BEGIN;
-
-CREATE SCHEMA Gold;
-
-COMMIT;

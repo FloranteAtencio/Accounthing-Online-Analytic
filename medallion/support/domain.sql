@@ -3,6 +3,8 @@ SELECT 'Finance Schema Domain Start!' as  Status;
 BEGIN;
 
 CREATE SCHEMA Staging;
+CREATE SCHEMA Audit;
+CREATE SCHEMA Compliance;
 
 -- Email domain
 DROP DOMAIN IF EXISTS email_type CASCADE;
