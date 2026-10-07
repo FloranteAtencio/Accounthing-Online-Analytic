@@ -34,7 +34,7 @@ BEGIN
         WHEN OTHERS THEN
             RAISE EXCEPTION 'Table verifications failed : %', SQLERRM;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;
 
 -- =====================================
 -- the main staging work flow santation
@@ -84,7 +84,7 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE EXCEPTION 'Staging import sanitation failed for session %: %', p_session_id, SQLERRM;
 END;
-$$ SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;
 
 
 COMMIT;

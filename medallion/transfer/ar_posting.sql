@@ -17,7 +17,7 @@ BEGIN
         LEFT JOIN Audit.import_workflows b ON a.id = b.staging_record_id 
         WHERE a.session_id = p_session_id
           AND validation_status = 'VALID'
-          AND b.new_state = 'APPROVE_L3'
+          AND b.new_state = 'VALID'
     LOOP
         INSERT INTO Silver.stg_ar_imports (
             session_id
@@ -29,14 +29,14 @@ BEGIN
             ,amount
             ,status)
         VALUES (
-            r.session_id::INT,
-            r.invoice_code::INT,
-            r.client_code::INT,
-            r.customer_code::INT,
-            r.due_date::DATE,
-            r.invoice_date::DATE,
-            r.amount::DECIMAL,
-            r.status::VARCHAR,
+            TRIM(r.session_id::INT),
+            TRIM(r.invoice_code::INT),
+            TRIM(r.client_code::INT),
+            TRIM(r.customer_code::INT),
+            TRIM(r.due_date::DATE),
+            TRIM(r.invoice_date::DATE),
+            TRIM(r.amount::DECIMAL),
+            UPPER(TRIM(r.status::VARCHAR))
         );        
         
         SELECT row_hash
@@ -69,7 +69,7 @@ BEGIN
                 COALESCE(new_previous_hash,'')
                 || p_session_id
                 || 'stg_ar_import'
-                || 'SPREADSHEET_IMPORT'
+                || p_import_type
                 || r.id
                 || current_user
             )
@@ -90,7 +90,7 @@ EXCEPTION
         RAISE EXCEPTION 'Staging post_ar_import failed : % ', SQLERRM;
 
 END;
-$$ SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;
 
 COMMIT;
 

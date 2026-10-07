@@ -24,7 +24,7 @@ BEGIN
             a.*, 
             c.row_number, 
             c.table_name
-        FROM Staging.stg_ar_imports a
+        FROM Bronze.stg_ar_imports a
         LEFT JOIN Audit.import_workflows b ON a.id = b.staging_record_id 
         LEFT JOIN Audit.import_detail_logs c ON a.id = c.created_record_id
         WHERE a.session_id = p_session_id AND b.new_state = 'PENDING' -- Fixed: Handle case where workflow row might not exist yet

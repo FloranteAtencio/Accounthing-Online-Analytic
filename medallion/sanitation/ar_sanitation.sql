@@ -164,4 +164,4 @@ EXCEPTION
         RAISE EXCEPTION 'Account Receivables Sanitations Failed: %', SQLERRM;
 
 END;
-$$ SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;

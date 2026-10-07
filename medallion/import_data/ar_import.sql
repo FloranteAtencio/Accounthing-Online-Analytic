@@ -67,7 +67,7 @@ BEGIN
                 COALESCE(new_previous_hash,'')
                 || p_session_id
                 || 'stg_ar_import'
-                || 'SPREADSHEET_IMPORT'
+                || p_import_status
                 || new_ar_staging_id
                 || current_user
             )
