@@ -8,7 +8,9 @@ CREATE TABLE Compliance.compliance_rules (
     rule_id INT PRIMARY KEY, -- Or BIGSERIAL if you want auto-increment
     rule_name VARCHAR(100) NOT NULL UNIQUE, -- e.g., 'Positive Amount Rule'
     check_type VARCHAR(50) NOT NULL CHECK (check_type IN (
-        'BALANCE_CHECK', 'AMOUNT_CHECK', 'DATE_CHECK', 'CLIENT_CHECK','CUSTOMER_CHECK','DUPLICATE_CHECK', 'THRESHOLD_CHECK', 'RECONCILIATION_CHECK','STATUS_CHECK'
+        'BALANCE_CHECK', 'AMOUNT_CHECK', 'DATE_CHECK', 'CLIENT_CHECK', 'CUSTOMER_CHECK',
+        'DUPLICATE_CHECK', 'THRESHOLD_CHECK', 'RECONCILIATION_CHECK','STATUS_CHECK',
+        'QUANTITY_CHECK', 'DISCOUNT_CHECK'
         )),   
     description TEXT, -- e.g., 'Ensures AR amount is strictly positive'
     severity VARCHAR(20) DEFAULT 'ERROR', -- 'WARNING', 'ERROR', 'CRITICAL'
@@ -21,6 +23,9 @@ INSERT INTO Compliance.compliance_rules (rule_id, rule_name, check_type, descrip
 (2, 'Valid Date Range', 'DATE_CHECK', 'Invoice date must be before due date'),
 (3, 'Customer Existence', 'CUSTOMER_CHECK', 'Customer ID must exist in Finance.customers'),
 (4, 'Status Existence', 'STATUS_CHECK', 'Status should be at the given list');
+(5, 'Positive Quantity Rule', 'QUANTITY_CHECK', 'Ensures QUANTITY is strictly positive'),
+(6, 'Positive DISCOUNT Rule', 'DISCOUNT_CHECK', 'Ensures DISCOUNT is strictly positive'),
+
 
 -- ========================================
 -- compliance schema Trails

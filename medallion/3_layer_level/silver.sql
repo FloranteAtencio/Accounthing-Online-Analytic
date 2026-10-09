@@ -150,16 +150,16 @@ CREATE TABLE IF NOT EXISTS Silver.product(
 
 DROP TABLE IF EXISTS Silver.ar_line;
 CREATE TABLE IF NOT EXISTS Silver.ar_line(
-    
-    fact_ar_line_key BIGINT,
-	invoice_code TEXT,
+    session_id INT,
+    client_code INT,
+    invoice_code TEXT,
     product_code INT,
 	quantity INT,
 	discount DECIMAL(18,2),
-	validation_status TEXT DEFAULT NULL,
-	validation_errors TEXT DEFAULT NULL,
+	--validation_status TEXT DEFAULT NULL,
+	--validation_errors TEXT DEFAULT NULL,
 	imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(fact_ar_line_key, invoice_code) 
+    UNIQUE(invoice_code,client_code)
 );
 
 COMMIT;

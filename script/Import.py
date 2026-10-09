@@ -3,9 +3,10 @@ import json
 import csv
 import os
 import sys
+import hashlib
 import config as conf
 
-def call_main(client_id,import_type):
+def call_main(client_id,import_type,import_file_location):
     conn = psycopg2.connect(
         host=conf.SETTINGS["database"]["host"],
         database=conf.SETTINGS["database"]["database"],
@@ -36,7 +37,7 @@ def call_main(client_id,import_type):
     try:
         cur.execute(
             "SELECT Audit.start_import_session(%s, %s, %s, %s)", 
-            (1, 'invoices', 'admin_user', 'data.csv')
+            (client_id, 'Invoice', 'CURRENT_USER',  import_file_location)
         )
         session_id = cur.fetchone()[0]
         print(f"✅ Session ID: {session_id}")
@@ -45,7 +46,7 @@ def call_main(client_id,import_type):
         cur.execute("SET app.worm_override = 'true';")
         cur.execute("SET app.worm_approver = 'SYSTEM_AUTOMATION';")
         cur.execute(f"SET LOCAL app.import_session_id = {session_id}")
-        cur.execute(F"SET LOCAL app.import_source_file = '{conf.SETTINGS["data"]["path"]}'")
+        cur.execute(F"SET LOCAL app.import_source_file = '{import_file_location}'")
 
 
     except Exception as e:
@@ -55,23 +56,25 @@ def call_main(client_id,import_type):
 
 
     try:
-        with open(conf.SETTINGS["data"]["path"], 'r', newline='', encoding='utf-8') as f:
+        with open(import_file_location, 'r', newline='', encoding='utf-8') as f:
             reader = csv.DictReader(f)     
             for i, row in enumerate(reader, start=1):
                 staging_id = None  # Initialize before try block
                 try:               
                     query = """
-                        SELECT Staging.ar_import_data(%s, %s, %s, %s, %s, %s, %s, %s)
+                        SELECT Staging.ar_import_data(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """
                     values = (
                         session_id,
-                        row.get('client_code'),   # Use .get() to avoid KeyError if missing
+                        row.get('invoice_code'),
+                        client_id,   # Use .get() to avoid KeyError if missing
                         row.get('customer_code'),
                         row.get('invoice_date'),
                         row.get('due_date'),
-                        row.get('amount'),
+                        row.get('payment_recieved'),
                         row.get('status'),
-                        import_type
+                        import_type,
+                        hashlib.sha256(str(row.get('invoice_code'))  or  ''.encode('utf-8')).hexdigest()+hashlib.sha256(str( client_id)  or ''.encode('utf-8')).hexdigest()+hashlib.sha256(str(session_id) or ''.encode('utf-8')).hexdigest()
                     )
 
                     cur.execute(query, values) 
@@ -105,11 +108,6 @@ def call_main(client_id,import_type):
                     )
 
         try:
-            cur.execute("CALL Staging.import_workflow_sanitation(%s)", (session_id,))
-            conn.commit()
-        except Exception as e:
-            print(f"Error: {e}")
-            
         # 5. COMPLETE SESSION
         print("✅ Import Loop Finished. Finalizing...")
         final_status = 'SUCCESS' 

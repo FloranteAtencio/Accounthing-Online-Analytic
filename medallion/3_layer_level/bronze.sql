@@ -12,7 +12,8 @@ CREATE SCHEMA Bronze;
 
 -- 1. STAGING TABLE
 CREATE TABLE IF NOT EXISTS Bronze.stg_ar_imports(
-    session_id          TEXT,
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,
     invoice_code        TEXT,
     customer_code       TEXT,
     client_code         TEXT,
@@ -23,13 +24,14 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_ar_imports(
     validation_status   TEXT DEFAULT NULL,
     validation_errors   TEXT DEFAULT NULL,
     imported_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(invoice_code, customer_code)
-
+    idempotency_key     TEXT NOT NULL,
+    UNIQUE(idempotency_key)
 );
 
 DROP TABLE IF EXISTS Bronze.stg_account;
 CREATE TABLE IF NOT EXISTS Bronze.stg_account(
-
+    id                  SERIAL PRIMARY KEY,    
+    session_id          INT,
     account_key         TEXT,
     account_id          TEXT,
     account_name        TEXT,
@@ -45,7 +47,8 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_account(
 
 DROP TABLE IF EXISTS Bronze.stg_date;
 CREATE TABLE IF NOT EXISTS Bronze.stg_date(
-
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,
     date_key            TEXT,
     date                TEXT,
     day                 TEXT,
@@ -66,7 +69,8 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_date(
 -- Client information
 DROP TABLE IF EXISTS Bronze.stg_client;
 CREATE TABLE IF NOT EXISTS Bronze.stg_client(
-
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,
     client_key          TEXT,
     client_id           TEXT,
     client_name         TEXT,
@@ -84,7 +88,8 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_client(
 -- Client information
 DROP TABLE IF EXISTS Bronze.stg_customer;
 CREATE TABLE IF NOT EXISTS Bronze.stg_customer(
-
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,
     customer_key        TEXT,
     customer_id         TEXT,
     customer_name       TEXT,
@@ -102,7 +107,8 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_customer(
 -- Location information
 DROP TABLE IF EXISTS Bronze.stg_location;
 CREATE TABLE IF NOT EXISTS Bronze.stg_location(
-
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,
     location_key        TEXT,
     location_id         TEXT,
     country             TEXT,
@@ -120,7 +126,8 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_location(
 
 DROP TABLE IF EXISTS Bronze.stg_currency;
 CREATE TABLE IF NOT EXISTS Bronze.stg_currency(
-
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,
     currency_key        TEXT,
     currency_id         TEXT,
     currency_code       TEXT,
@@ -135,7 +142,8 @@ CREATE TABLE IF NOT EXISTS Bronze.stg_currency(
 
 DROP TABLE IF EXISTS Bronze.product;
 CREATE TABLE IF NOT EXISTS Bronze.product(
-    
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,    
     product_code        TEXT,
     product_name        TEXT,
     description         TEXT,
@@ -152,8 +160,9 @@ CREATE TABLE IF NOT EXISTS Bronze.product(
 
 DROP TABLE IF EXISTS Bronze.ar_line;
 CREATE TABLE IF NOT EXISTS Bronze.ar_line(
-    
-    fact_ar_line_key    TEXT,
+    id                  SERIAL PRIMARY KEY,
+    session_id          INT,
+    client_code         TEXT,
 	invoice_code        TEXT,
     product_code        TEXT,
 	quantity            TEXT,
@@ -161,7 +170,8 @@ CREATE TABLE IF NOT EXISTS Bronze.ar_line(
 	validation_status   TEXT DEFAULT NULL,
 	validation_errors   TEXT DEFAULT NULL,
 	imported_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(fact_ar_line_key, invoice_code) 
+    idempotency_key     TEXT,
+    UNIQUE(idempotency_key)
 );
 
 COMMIT;

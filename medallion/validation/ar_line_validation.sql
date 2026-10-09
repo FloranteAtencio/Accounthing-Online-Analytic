@@ -23,7 +23,7 @@ BEGIN
         SELECT 
             a.*,  
             c.table_name
-        FROM Bronze.stg_ar_imports a
+        FROM Bronze.ar_line a
         LEFT JOIN Audit.import_workflows b ON a.id = b.staging_record_id 
         LEFT JOIN Audit.import_detail_logs c ON a.id = c.created_record_id
         WHERE a.session_id = p_session_id AND b.new_state = 'PENDING' -- Fixed: Handle case where workflow row might not exist yet
@@ -33,27 +33,26 @@ BEGIN
         -- Call the validation function
         SELECT *
         INTO z
-        FROM Compliance.validate_ar_import(
-            -- r.id::INT,
-            -- r.customer_code::INT,
-            r.amount::DECIMAL,
-            r.invoice_date::DATE,
-            r.due_date::DATE,
-            r.status::VARCHAR
+        FROM Compliance.validate_ar_line_import(
+            r.quantity::INT,
+            r.discount::DECIMAL
+           -- r.invoice_date::DATE,
+           -- r.due_date::DATE,
+           -- r.status::VARCHAR
         );
 
         -- ========================================================
         -- Amount Check 1
         -- ========================================================
         -- FIX: Use z.amount_error instead of z.v_errors_amount
-        IF z.amount_error IS NOT NULL THEN
+        IF z.quantity_error IS NOT NULL THEN
             PERFORM Audit.import_validation(
-                r.session_id, r.id, r.table_name, 
-                'INVALID: Check Amount Value!', r.amount, FALSE, 'ERROR'
+                r.session_ r.table_name, 
+                'INVALID: Quantity', r.amount, FALSE, 'ERROR'
             );
             PERFORM Compliance.log_compliance_check(
                 r.client_code::INT
-                , 1::INT
+                , 5::INT
                 , r.session_id::INT
                 , r.id::INT
                 , NULL
@@ -64,12 +63,12 @@ BEGIN
             );
         ELSE
             PERFORM Audit.import_validation(
-                r.session_id, r.id, r.table_name, 
-                'Valid: Amount!', r.amount, TRUE, 'INFO'
+                r.session_ r.table_name, 
+                'Valid: Quantity  ', r.amount, TRUE, 'INFO'
             );
             PERFORM Compliance.log_compliance_check(
                 r.client_code::INT
-                , 1::INT
+                , 5::INT
                 , r.session_id::INT
                 , r.id::INT
                 , NULL
@@ -84,14 +83,14 @@ BEGIN
         -- Invoice Date Check 2
         -- ========================================================
         -- FIX: Use z.Invoice_error instead of z.v_errors_invoice
-        IF z.Invoice_error IS NOT NULL THEN
+        IF z.discount_error IS NOT NULL THEN
             PERFORM Audit.import_validation(
-                r.session_id, r.id, r.table_name, 
-                'INVALID: Check Invoice Value!', r.invoice_date, FALSE, 'ERROR'
+                r.session_ r.table_name, 
+                'INVALID: Discount Rate!', r.invoice_date, FALSE, 'ERROR'
             );
             PERFORM Compliance.log_compliance_check(
                 r.client_code::INT
-                , 2::INT
+                , 6::INT
                 , r.session_id::INT
                 , r.id::INT
                 , NULL
@@ -102,12 +101,12 @@ BEGIN
             );
         ELSE
             PERFORM Audit.import_validation(
-                r.session_id, r.id, r.table_name, 
-                'VALID: Invoice Date!', r.invoice_date, TRUE, 'INFO'
+                r.session_ r.table_name, 
+                'VALID: Discount rate!', r.invoice_date, TRUE, 'INFO'
             );
             PERFORM Compliance.log_compliance_check(
                 r.client_code::INT
-                , 2::INT
+                , 6::INT
                 , r.session_id::INT
                 , r.id::INT
                 , NULL
@@ -124,7 +123,7 @@ BEGIN
         -- FIX: Use z.customer_error instead of z.v_errors_customer
         -- IF z.customer_error IS NOT NULL THEN
         --     PERFORM Audit.import_validation(
-        --         r.session_id, r.id, r.table_name, 
+        --         r.session_ r.table_name, 
         --         'INVALID: Customer not exists!', r.customer_code, FALSE, 'ERROR'
         --     );
         --     PERFORM Compliance.log_compliance_check(
@@ -140,7 +139,7 @@ BEGIN
         --     );
         -- ELSE
         --     PERFORM Audit.import_validation(
-        --         r.session_id, r.id, r.table_name, 
+        --         r.session_ r.table_name, 
         --         'VALID: Customer!', r.customer_code, TRUE, 'INFO'
         --     );
         --     PERFORM Compliance.log_compliance_check(
@@ -159,52 +158,53 @@ BEGIN
         -- ========================================================
         -- Status Check 4
         -- ========================================================
-        -- FIX: Use z.status_error instead of z.v_errors_status
-        IF z.status_error IS NOT NULL THEN
-            PERFORM Audit.import_validation(
-                r.session_id, r.id, r.table_name, 
-                'INVALID: Status Check!', r.status, FALSE, 'ERROR'
-            );
-            -- Log status fail if needed
-            PERFORM Compliance.log_compliance_check(
-               r.client_code::INT
-                , 4::INT
-                , r.session_id::INT
-                , r.id::INT
-                , NULL
-                , r.table_name
-                , 'FAIL'
-                , 'UNRESOLVED'
-                , NULL
-            );
-        ELSE
-            PERFORM Audit.import_validation(
-                r.session_id, r.id, r.table_name, 
-                'Valid: Status!', r.status, TRUE, 'INFO'
-            );
-            -- Log status pass if needed
-            PERFORM Compliance.log_compliance_check(
-               r.client_code::INT
-                , 4::INT
-                , r.session_id::INT
-                , r.id::INT
-                , NULL
-                , r.table_name
-                , 'PASS'
-                , 'RESOLVED'
-                , NULL
-            );
-        END IF;
+        -- -- FIX: Use z.status_error instead of z.v_errors_status
+        -- IF z.status_error IS NOT NULL THEN
+        --     PERFORM Audit.import_validation(
+        --         r.session_ r.table_name, 
+        --         'INVALID: Status Check!', r.status, FALSE, 'ERROR'
+        --     );
+        --     -- Log status fail if needed
+        --     PERFORM Compliance.log_compliance_check(
+        --        r.client_code::INT
+        --         , 4::INT
+        --         , r.session_id::INT
+        --         , r.id::INT
+        --         , NULL
+        --         , r.table_name
+        --         , 'FAIL'
+        --         , 'UNRESOLVED'
+        --         , NULL
+        --     );
+        -- ELSE
+        --     PERFORM Audit.import_validation(
+        --         r.session_ r.table_name, 
+        --         'Valid: Status!', r.status, TRUE, 'INFO'
+        --     );
+        --     -- Log status pass if needed
+        --     PERFORM Compliance.log_compliance_check(
+        --        r.client_code::INT
+        --         , 4::INT
+        --         , r.session_id::INT
+        --         , r.id::INT
+        --         , NULL
+        --         , r.table_name
+        --         , 'PASS'
+        --         , 'RESOLVED'
+        --         , NULL
+        --     );
+        -- END IF;
 
         -- ========================================================
         -- Update Workflow Status (Only if ALL checks passed)
         -- ========================================================
         -- Logic: If ANY error was found, we should NOT update to 'VALID'.
         -- We only update if ALL four are NULL.
-        IF z.amount_error IS NULL 
-           AND z.Invoice_error IS NULL 
-        --    AND z.customer_error IS NULL 
-           AND z.status_error IS NULL THEN
+        IF z.quantity_error_error IS NULL 
+           AND z.discount_error IS NULL 
+           -- AND z.customer_error IS NULL 
+           -- AND z.status_error IS NULL 
+           THEN
             
             UPDATE Audit.import_workflows 
             SET 
@@ -222,3 +222,4 @@ EXCEPTION
         RAISE EXCEPTION 'Procedure ar_import_workflow_validation failed: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;
+

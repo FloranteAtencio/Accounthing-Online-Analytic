@@ -2,7 +2,7 @@
 -- add more procedure for sanitation for each staging table
 -- =====================================
 
-CREATE OR REPLACE PROCEDURE Staging.ar_sanitation(
+CREATE OR REPLACE PROCEDURE Staging.ar_line_sanitation(
     IN p_session_id INT
 )
 LANGUAGE plpgsql as $$
@@ -13,7 +13,7 @@ BEGIN
 
     FOR r IN    
         SELECT *
-        FROM Staging.stg_ar_imports a
+        FROM Staging.stg_ar_lines a
         WHERE a.session_id = p_session_id
     LOOP
 
@@ -21,28 +21,20 @@ BEGIN
         --     collect_errors := array_append(collect_errors, 'Customer not found');
         -- END IF;
 
-        -- IF NOT EXISTS ( SELECT 1 FROM Finance.clients z WHERE z.client_id = r.client_code::INT )  THEN 
+        -- IF NOT EXISTS ( SELECT 1 FROM Finance.clients z WHERE z.client_id = r.product_code::INT )  THEN 
         --     collect_errors := array_append(collect_errors, 'Client not found');
         
         -- END IF;
-        
-        IF r.amount !~ '^\.?\d+(\.\d+)?$' THEN 
+
+        IF r.quantity !~ '^\.?\d+(\.\d+)?$' THEN 
             collect_errors := array_append(collect_errors,'Invalid amount format');
         END IF;
-        
-        IF r.invoice_date !~ '^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$' THEN 
-            collect_errors := array_append(collect_errors,'Invalid Date');  
-        END IF;
-        
-        IF r.due_date !~ '^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$' THEN 
-            collect_errors := array_append(collect_errors,'Invalid Date');
+
+        IF r.discount !~ '^\.?\d+(\.\d+)?$' THEN 
+            collect_errors := array_append(collect_errors,'Invalid amount format');
         END IF;
 
-        IF r.status NOT IN ('Pending', 'Paid', 'Overdue','Returned','Partially Returned','Partially Paid') THEN 
-            collect_errors := array_append(collect_errors,'INVALID Status');
-        END IF;
-
-        UPDATE Staging.stg_ar_imports s
+        UPDATE Staging.stg_ar_lines s
         SET 
             validation_status = 
                 CASE 
@@ -84,4 +76,4 @@ EXCEPTION
         RAISE EXCEPTION 'Account Receivables Sanitations Failed: %', SQLERRM;
 
 END;
-$$ SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;

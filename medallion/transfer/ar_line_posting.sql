@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE OR REPLACE PROCEDURE Staging.post_ar_line_import( IN p_session_id INT, p_import_type TEXT)
+CREATE OR REPLACE PROCEDURE Staging.post_ar_import( IN p_session_id INT, p_import_type TEXT)
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -19,23 +19,24 @@ BEGIN
           AND validation_status = 'VALID'
           AND b.new_state = 'VALID'
     LOOP
-        INSERT INTO Silver.ar_line (
+        INSERT INTO Silver.stg_ar_imports (
             session_id
-            ,client_code
             ,invoice_code
-            ,product_code
-            ,quantity
-            ,discount
-            )
+            ,client_code
+            ,customer_code
+            ,due_date
+            ,invoice_date
+            ,amount
+            ,status)
         VALUES (
             TRIM(r.session_id::INT),
-            TRIM(r.client_code::INT),
             TRIM(r.invoice_code::INT),
-            TRIM(r.product_code::INT),
-            TRIM(r.quantity::INT),
-            TRIM(r.discount::DECIMAL)
-            --TRIM(r.amount::DECIMAL),
-            --UPPER(TRIM(r.status::VARCHAR))
+            TRIM(r.client_code::INT),
+            TRIM(r.customer_code::INT),
+            TRIM(r.due_date::DATE),
+            TRIM(r.invoice_date::DATE),
+            TRIM(r.amount::DECIMAL),
+            UPPER(TRIM(r.status::VARCHAR))
         );        
         
         SELECT row_hash
@@ -67,7 +68,7 @@ BEGIN
             md5(
                 COALESCE(new_previous_hash,'')
                 || p_session_id
-                || 'stg_ar_import'
+                || 'ar_line'
                 || p_import_type
                 || r.id
                 || current_user

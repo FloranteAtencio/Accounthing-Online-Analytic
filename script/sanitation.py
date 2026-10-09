@@ -5,7 +5,8 @@ import os
 import sys
 import config as conf
 
-def call_main(session_id,import_type,import_file_location):
+def call_main(session_id,client_id):
+    
     conn = psycopg2.connect(
         host=conf.SETTINGS["database"]["host"],
         database=conf.SETTINGS["database"]["database"],
@@ -14,24 +15,23 @@ def call_main(session_id,import_type,import_file_location):
         port=conf.SETTINGS["database"]["port"]
     )
 
-
     cur = conn.cursor()
-    cur.execute(f"SET LOCAL app.import_source_file = '{import_file_location}'")
 
+    cur.execute(f"SET LOCAL app.get_permission_to_update = true")
+    cur.execute(f"SET LOCAL app.current_client_id ={client_id}")
+
+    print(f"🦽 Pending Validations Start!")
     try:
-        print(f"🦽 Pending Posting Start!")
         try:        
-            cur.execute(" CALL staging.import_workflow_posting(%s,%s)",
-                    (session_id,import_type)
-                    )
+            cur.execute("CALL Staging.import_workflow_sanitation(%s)", (session_id,))
             conn.commit()
-            print(f"🎉 Posting Complete !")
-        except Exception as inner_e:
-            print(f"⚠️ Posting procedure fail : {inner_e}")
+            print(f"🎉 Sanitation Complete !")
+        except Exception as e:
+            print(f"Error: {e}")
                 
     except Exception as e:
         err_message = str(e)
-        print(f"⚠️  Posting script Failed : {err_message}")
+        print(f"⚠️  Validation Script Failed : {err_message}")
 
     finally:
 

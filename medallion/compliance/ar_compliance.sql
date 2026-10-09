@@ -2,8 +2,8 @@
 -- Validate AR import
 DROP FUNCTION IF EXISTS Compliance.validate_ar_import(INT, INT, DECIMAL, DATE, DATE, VARCHAR) CASCADE;
 CREATE FUNCTION Compliance.validate_ar_import(
-    p_receivable_id INT,
-    p_customer_id INT,
+    -- p_receivable_id INT,
+    -- p_customer_id INT,
     p_amount DECIMAL,
     p_invoice_date DATE,
     p_due_date DATE,
@@ -14,7 +14,7 @@ DECLARE
 
     v_errors_amount TEXT;
     v_errors_invoice TEXT;
-    v_errors_customer TEXT;
+    --v_errors_customer TEXT;
     v_errors_status TEXT;
     
 BEGIN
@@ -28,10 +28,10 @@ BEGIN
         v_errors_invoice := 'Invoice date cannot be after due date';
     END IF;
     
-    -- Validate customer exists
-    IF NOT EXISTS (SELECT 1 FROM Finance.customers z WHERE z.customer_id = p_customer_id) THEN
-        v_errors_customer := 'Customer ID does not exist';
-    END IF;
+    -- -- Validate customer exists
+    -- IF NOT EXISTS (SELECT 1 FROM Finance.customers z WHERE z.customer_id = p_customer_id) THEN
+    --     v_errors_customer := 'Customer ID does not exist';
+    -- END IF;
     
     -- Validate status
     IF p_status NOT IN ('Pending', 'Paid', 'Overdue','Returned','Partially Returned','Partially Paid') THEN
@@ -41,7 +41,7 @@ BEGIN
     RETURN QUERY SELECT
         v_errors_amount,
         v_errors_invoice,
-        v_errors_customer,
+        -- v_errors_customer,
         v_errors_status;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Finance, Audit, Compliance, Security, Staging, pg_catalog;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = Bronze, Audit, Compliance, Staging, pg_catalog;

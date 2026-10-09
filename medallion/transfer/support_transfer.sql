@@ -1,6 +1,6 @@
 
 CREATE OR REPLACE PROCEDURE Staging.import_workflow_posting(
-    IN p_session_id INT
+    IN p_session_id INT, IN p_import_type TEXT
 )
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -26,7 +26,7 @@ BEGIN
     PERFORM 1 FROM Audit.import_sessions WHERE session_id = p_session_id;
 
     IF table_related = 'Bronze.stg_ar_imports' THEN
-        CALL Staging.post_ar_import(new_session_id);
+        CALL Staging.post_ar_import(new_session_id,p_import_type);
     END IF;
 
 EXCEPTION
